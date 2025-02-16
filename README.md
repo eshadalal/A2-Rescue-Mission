@@ -1,5 +1,8 @@
 # Assignment A2 - Rescue mission
 
+Esha Dalal
+Kaiden Jessani
+
 ## Product Description
 
 This product is an _exploration command center_ for the [Island](https://ace-design.github.io/island/) serious game. 
