@@ -1,7 +1,7 @@
 # Assignment A2 - Rescue mission
 
-Esha Dalal
-Kaiden Jessani
+- Esha Dalal
+- Kaiden Jessani
 
 ## Product Description
 
