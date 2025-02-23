@@ -1,32 +1,48 @@
-package ca.mcmaster.se2aa4.island.teamXXX;
+package ca.mcmaster.se2aa4.island.team38;
 
 import java.io.StringReader;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import eu.ace_design.island.bot.IExplorerRaid;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import eu.ace_design.island.bot.IExplorerRaid;
 
 public class Explorer implements IExplorerRaid {
 
     private final Logger logger = LogManager.getLogger();
+
+    private String direction;
+    private int batteryLevel;
+    private String creekId = null;
+    private boolean foundCreek = false;
 
     @Override
     public void initialize(String s) {
         logger.info("** Initializing the Exploration Command Center");
         JSONObject info = new JSONObject(new JSONTokener(new StringReader(s)));
         logger.info("** Initialization info:\n {}",info.toString(2));
-        String direction = info.getString("heading");
-        Integer batteryLevel = info.getInt("budget");
+        direction = info.getString("heading");
+        batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
     }
 
+    public String getDirection() {
+        return direction;
+    }
+
+
     @Override
     public String takeDecision() {
         JSONObject decision = new JSONObject();
-        decision.put("action", "stop"); // we stop the exploration immediately
+        if (!foundCreek) {
+            decision.put("action", "scan");  // look for a creek
+        } else {
+            decision.put("action", "stop");  // stop if a creek has been found 
+        }
+
         logger.info("** Decision: {}",decision.toString());
         return decision.toString();
     }
@@ -39,13 +55,24 @@ public class Explorer implements IExplorerRaid {
         logger.info("The cost of the action was {}", cost);
         String status = response.getString("status");
         logger.info("The status of the drone is {}", status);
-        JSONObject extraInfo = response.getJSONObject("extras");
-        logger.info("Additional information received: {}", extraInfo);
+        if (status.equals("success")) {
+            JSONObject extraInfo = response.getJSONObject("extras");
+            logger.info("Additional information received: {}", extraInfo);
+                if (extraInfo.has("creek")) {
+                    this.creekId = response.getString("creek");
+                    this.foundCreek = true;
+                    logger.info("Creek found: {}", creekId);
+            }
+        }
     }
 
     @Override
     public String deliverFinalReport() {
-        return "no creek found";
+        if (foundCreek) {
+            return this.creekId;
+        } else {
+            return "no creek found";
+    }
     }
 
 }
