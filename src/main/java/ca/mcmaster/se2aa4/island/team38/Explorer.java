@@ -14,6 +14,7 @@ public class Explorer implements IExplorerRaid {
     private final Logger logger = LogManager.getLogger();
 
     private String direction;
+    private Drone drone; 
     private int batteryLevel;
     private String creekId = null;
     private boolean foundCreek = false;
@@ -27,6 +28,8 @@ public class Explorer implements IExplorerRaid {
         batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
+
+        drone = new Drone(direction, batteryLevel, 0, 0); // assuming (0, 0) is the base
     }
 
     public String getDirection() {
@@ -37,12 +40,12 @@ public class Explorer implements IExplorerRaid {
     @Override
     public String takeDecision() {
         JSONObject decision = new JSONObject();
-        if (!foundCreek) {
+        while (!foundCreek) {
+            decision.put("action", "echo"); 
             decision.put("action", "scan");  // look for a creek
-        } else {
-            decision.put("action", "stop");  // stop if a creek has been found 
         }
-
+        
+        decision.put("action", "stop");  // stop if a creek has been found 
         logger.info("** Decision: {}",decision.toString());
         return decision.toString();
     }
@@ -55,24 +58,25 @@ public class Explorer implements IExplorerRaid {
         logger.info("The cost of the action was {}", cost);
         String status = response.getString("status");
         logger.info("The status of the drone is {}", status);
-        if (status.equals("success")) {
-            JSONObject extraInfo = response.getJSONObject("extras");
-            logger.info("Additional information received: {}", extraInfo);
-                if (extraInfo.has("creek")) {
-                    this.creekId = response.getString("creek");
-                    this.foundCreek = true;
-                    logger.info("Creek found: {}", creekId);
-            }
+        JSONObject extraInfo = response.getJSONObject("extras");
+        logger.info("Additional information received: {}", extraInfo);
+    
+        drone.getInfo(cost, extraInfo); // send info to drone 
+
+        if (extraInfo.has("creek")) {
+            this.creekId = response.getString("creek");
+            this.foundCreek = true;
+            logger.info("Creek found: {}", creekId);
         }
     }
+
 
     @Override
     public String deliverFinalReport() {
         if (foundCreek) {
-            return this.creekId;
+            return "Creek found: " + creekId;
         } else {
-            return "no creek found";
+            return "No creek found";
+        }
     }
-    }
-
 }
