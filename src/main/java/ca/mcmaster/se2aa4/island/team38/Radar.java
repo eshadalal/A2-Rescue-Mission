@@ -15,7 +15,7 @@ class Radar {
         if (found.equals("GROUND")) {
             drone.fly(); // safe to explore area
         } else if (found.equals("OUT_0F_RANGE")) {
-            turn(); // turn either left or right 
+            turnLeft(); // NEED TO FIX 
         }
     }
 
