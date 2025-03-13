@@ -1,37 +1,39 @@
 package ca.mcmaster.se2aa4.island.team38;
 
 import org.json.JSONObject;
-import eu.ace_design.island.bot.IExplorerRaid;
 
 class Radar { 
 
     private Drone drone;
 
+    public Radar(Drone drone) { 
+        this.drone = drone;
+    }
+
     public void processRadarData(JSONObject response) {
         JSONObject extraInfo = response.getJSONObject("extras");
-        int range = extraInfo.getInt("range");
-        String found = extraInfo.getString("found");
-
+        int range = extraInfo.getInt("range"); 
+        String found = extraInfo.getString("found"); 
+        
         if (found.equals("GROUND")) {
-            drone.fly(); // safe to explore area
-        } else if (found.equals("OUT_0F_RANGE")) {
-            turnLeft(); // NEED TO FIX 
+            drone.fly(); // Safe to explore area
+        } else if (found.equals("OUT_OF_RANGE")) {
+            // If no ground is detected in the current direction, decide the next direction to turn
+            decideTurnDirection();
         }
     }
 
-    private void decideTurnDirection() {
-
-        JSONObject leftScan = drone.echo("W"); // Check left
-        JSONObject rightScan = drone.echo("E"); // Check right
+    public void decideTurnDirection() {
+        JSONObject leftScan = drone.echo("WEST"); 
+        JSONObject rightScan = drone.echo("EAST"); 
 
         int leftRange = leftScan.getJSONObject("extras").getInt("range");
         int rightRange = rightScan.getJSONObject("extras").getInt("range");
 
         if (leftRange > rightRange) {
-            drone.turnLeft();
+            drone.turnLeft(); // Turn left
         } else {
-            drone.turnRight();
+            drone.turnRight(); // Turn right
         }
     }
-
 }

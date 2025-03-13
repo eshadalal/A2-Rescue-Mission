@@ -1,10 +1,8 @@
 package ca.mcmaster.se2aa4.island.team38;
 
 import org.json.JSONObject;
-import eu.ace_design.island.bot.IExplorerRaid;
 
-
-public class Drone {
+public class Drone implements DroneController {
     
     private String direction;
     private int batteryLevel;
@@ -16,75 +14,120 @@ public class Drone {
         this.position = new Position(x, y);
     }
 
-    public void fly() { // simply move forward in current direction
+    @Override
+    public void initialize(String direction, int batteryLevel, int x, int y) {
+        this.direction = direction;
+        this.batteryLevel = batteryLevel;
+        this.position = new Position(x, y);
+    }
+
+    @Override
+    public void fly() {
         if (batteryLevel <= 0) {
-            System.out.println("DRONE LOST");
+            System.out.println("DRONE LOST: Battery is empty.");
             return;
         }
 
-        if (direction.equals("NORTH")) {
-            position.updateY(1);
-        } else if (direction.equals("SOUTH")) {
-            position.updateY(-1);
-        } else if (direction.equals("EAST")) {
-            position.updateX(1);
-        } else if (direction.equals("WEST")) {
-            position.updateX(-1);
-
+        switch (direction) {
+            case "NORTH":
+                position.updateY(1);
+                break;
+            case "SOUTH":
+                position.updateY(-1);
+                break;
+            case "EAST":
+                position.updateX(1);
+                break;
+            case "WEST":
+                position.updateX(-1);
+                break;
+            default:
+                System.out.println("Invalid direction");
+                return;
         }
 
         batteryLevel--;
     }
 
+    @Override
     public void turnRight() {
-
-        if (direction.equals("NORTH")) {
-            direction = "EAST";
-        } else if (direction.equals("SOUTH")) {
-            direction = "WEST";
-        } else if (direction.equals("EAST")) {
-            direction = "SOUTH";
-        } else if (direction.equals("WEST")) {
-            direction = "NORTH";
+        switch (direction) {
+            case "NORTH": 
+                direction = "EAST"; 
+                break;
+            case "EAST": 
+                direction = "SOUTH"; 
+                break;
+            case "SOUTH": 
+                direction = "WEST"; 
+                break;
+            case "WEST": 
+                direction = "NORTH"; 
+                break;
         }
-
+        batteryLevel--;
     }
 
+    @Override
     public void turnLeft() {
-
-        if (direction.equals("NORTH")) {
-            direction = "WEST";
-        } else if (direction.equals("SOUTH")) {
-            direction = "EAST";
-        } else if (direction.equals("EAST")) {
-            direction = "NORTH";
-        } else if (direction.equals("WEST")) {
-            direction = "SOUTH";
+        switch (direction) {
+            case "NORTH": 
+                direction = "WEST"; 
+                break;
+            case "WEST": 
+                direction = "SOUTH"; 
+                break;
+            case "SOUTH": 
+                direction = "EAST"; 
+                break;
+            case "EAST": 
+                direction = "NORTH"; 
+                break;
         }
+        batteryLevel--;
     }
 
+    @Override
     public void scan() {
-
     }
 
+    @Override
     public void stop() {
-
     }
 
-    public void getInfo(Integer cost, JSONObject extraInfo) { 
-        
+    @Override
+    public void getInfo(Integer cost, JSONObject extraInfo) {
+        System.out.println("Cost of the operation: " + cost);
+        System.out.println("Additional Information: " + extraInfo.toString(2));
     }
 
+    @Override
     public Position getPosition() {
         return this.position;
     }
 
+    @Override
     public String getDirection() {
         return this.direction;
     }
 
+    @Override
     public int getBatteryLevel() {
         return this.batteryLevel;
     }
 
+    public JSONObject echo(String direction) {
+        // return the scan result as JSON
+        JSONObject response = new JSONObject();
+        JSONObject extraInfo = new JSONObject();
+
+        // extraInfo.put("range", range);
+        // extraInfo.put("found", found);
+
+        response.put("extras", extraInfo);
+
+        return response;
+    }
+
 }
+
