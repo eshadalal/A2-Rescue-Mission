@@ -1,60 +1,79 @@
 package ca.mcmaster.se2aa4.island.team38;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.HashSet;
+
+
 import eu.ace_design.island.bot.IExplorerRaid;
+
+
 
 public class Explorer implements IExplorerRaid {
 
     private final Logger logger = LogManager.getLogger();
-    private String direction;
-    private Drone drone; 
+    private Drone drone;
     private int batteryLevel;
-    private String creekId = null;
+    private boolean hasFoundLand = false;
     private boolean foundCreek = false;
     private boolean lastActionScan = false;
-    private List<PointsOfInterest> pointsOfInterest = new ArrayList<>();
-    
+    private PointsOfInterest pointsOfInterest = new PointsOfInterest(new ArrayList<>());
+
     @Override
     public void initialize(String s) {
         logger.info("** Initializing the Exploration Command Center");
         JSONObject info = new JSONObject(new JSONTokener(new StringReader(s)));
-        logger.info("** Initialization info:\n {}", info.toString(2));
-        
-        direction = info.getString("heading");
+
+        String direction = info.getString("heading");
         batteryLevel = info.getInt("budget");
+
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
 
-        drone = new Drone(direction, batteryLevel, 0, 0); // Assuming (0,0) is the starting position
+        // Initialize drone at (0,0)
+        drone = new Drone(direction, batteryLevel, 0, 0);
+        hasFoundLand = false;
+        foundCreek = false;
     }
 
     @Override
     public String takeDecision() {
         JSONObject decision = new JSONObject();
-        
+
         if (foundCreek) {
-            decision.put("action", "stop");  // Stop when a creek is found
-        } else if (!lastActionScan) {
-            decision.put("action", "scan"); // Switch to scanning after echoing
-            lastActionScan = true;
+            decision.put("action", "stop");
+        } else if (!hasFoundLand) {
+            JSONObject echoResult = drone.echoForward();
+            JSONObject extras = echoResult.optJSONObject("extras");
+            
+            if (extras != null && extras.has("found")) {
+                String found = extras.getString("found");
+                if (found.equals("GROUND")) {
+                    hasFoundLand = true;
+                } else {
+                    drone.turnLeft();
+                }
+            } else {
+                logger.warn("Warning: Missing 'found' key in echo response.");
+                decision.put("action", "scan");  // Default safe action
+            }
         } else {
-            decision.put("action", "echo"); // Echo to detect obstacles
-            decision.put("parameters", new JSONObject().put("direction", direction));
-            lastActionScan = false;
+            decision.put("action", "scan");
         }
-        
-        logger.info("** Decision: {}", decision.toString());
-        return decision.toString();
+
+        logger.info("Decision made: {}", decision.toString());
+        return decision.toString();  // ✅ Ensure a JSON response is always returned
     }
+
 
     @Override
     public void acknowledgeResults(String s) {
@@ -62,37 +81,92 @@ public class Explorer implements IExplorerRaid {
         logger.info("** Response received:\n" + response.toString(2));
 
         int cost = response.getInt("cost");
-        logger.info("The cost of the action was {}", cost);
         batteryLevel -= cost;
-        logger.info("The remaining battery level is {}", batteryLevel);
+        logger.info("Remaining battery level: {}", batteryLevel);
 
         String status = response.getString("status");
-        logger.info("The status of the drone is {}", status);
+        logger.info("Drone status: {}", status);
 
         JSONObject extraInfo = response.getJSONObject("extras");
-        logger.info("Additional information received: {}", extraInfo);
 
-        drone.getInfo(cost, extraInfo); // Update drone info
-        // Check if a creek is found
         if (extraInfo.has("creeks")) {
             JSONArray creeks = extraInfo.getJSONArray("creeks");
             for (int i = 0; i < creeks.length(); i++) {
                 String creek = creeks.getString(i);
                 logger.info("Creek found: {}", creek);
+                pointsOfInterest.addPointOfInterest(drone.getPosition(), creek, PointsOfInterest.PointOfInterestType.CREEKS);
+                foundCreek = true;
             }
-            this.foundCreek = true;
-}
+        }
+
+        if (extraInfo.has("site")) {
+            String site = extraInfo.getString("site");
+            logger.info("Emergency site found: {}", site);
+            pointsOfInterest.addPointOfInterest(drone.getPosition(), site, PointsOfInterest.PointOfInterestType.SITES);
+        }
+
+        drone.getInfo(cost, extraInfo);
     }
 
     @Override
     public String deliverFinalReport() {
-        if (pointsOfInterest.isEmpty()) {
-            return "No creek found";
+        if (pointsOfInterest.getCreeks().isEmpty() || pointsOfInterest.getEmergencySite() == null) {
+            return "No creek found or emergency site missing.";
         }
-        StringBuilder report = new StringBuilder("Creeks found: ");
-        for (PointsOfInterest point : pointsOfInterest) {
-            report.append(point); // need to append the closest creek id
+
+        Position emergencySite = pointsOfInterest.getEmergencySite().getPosition();
+        List<Position> creeks = pointsOfInterest.getCreeks().stream()
+                        .map(PointsOfInterest.PointOfInterest::getPosition)
+                        .collect(Collectors.toList());
+        Set<Position> obstacles = getObstaclesFromMap(); // You need to implement this
+
+        List<Position> shortestPath = PathFinder.findShortestPath(emergencySite, creeks, obstacles);
+
+        if (shortestPath == null || shortestPath.isEmpty()) {
+            return "No valid path found to a creek.";
         }
-        return report.toString();
+
+        Position closestCreekPos = shortestPath.get(shortestPath.size() - 1);
+        PointsOfInterest.PointOfInterest closestCreek = pointsOfInterest.getCreeks().stream()
+                .filter(creek -> creek.getPosition().equals(closestCreekPos))
+                .findFirst()
+                .orElse(null);
+
+        String finalReport;
+        if (closestCreek != null) {
+            finalReport = "Closest creek to the emergency site: " + closestCreek.getID();
+        } else {
+            finalReport = "Path found, but no valid creek ID.";
+        }
+
+        logger.info("Final Report: " + finalReport);  // ✅ Log the final result
+        return finalReport;  
     }
+
+
+    private Set<Position> getObstaclesFromMap() {
+        Set<Position> obstacles = new HashSet<>();
+
+        // Loop through all scanned positions
+        for (PointsOfInterest.PointOfInterest poi : pointsOfInterest.getCreeks()) {
+            Position pos = poi.getPosition();
+            
+            // Example: If the tile is "OCEAN", mark it as an obstacle
+            if (poi.getPointOfInterestType() == PointsOfInterest.PointOfInterestType.BIOMES) {
+                obstacles.add(pos);
+            }
+        }
+
+        return obstacles;
+    }
+
+    public int getBatteryLevel() {  // ✅ Add this to `Explorer.java`
+        return this.batteryLevel;
+    }
+    
+    public String getDirection() {  // ✅ Add this to `Explorer.java`
+        return this.drone.getDirection();  // Assuming `drone` is tracking direction
+    }
+    
+
 }

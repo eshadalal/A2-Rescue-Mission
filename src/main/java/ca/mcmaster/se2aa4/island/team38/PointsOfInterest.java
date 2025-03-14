@@ -59,32 +59,35 @@ public class PointsOfInterest {
     }
 
     public class PointOfInterest {
-        
+    
         private Position position;
         private String id;
         private PointOfInterestType type;
-
+    
         public PointOfInterest(Position position, String id, PointOfInterestType type) {
             this.position = new Position(position.getX(), position.getY());  
             this.id = id;
             this.type = type;
         }
-
+    
         public int getX() {
             return position.getX();
         }
-
+    
         public int getY() {
             return position.getY();
         }
-
+    
+        public Position getPosition() {  // ✅ FIXED: Now `Explorer` can use `getPosition()`
+            return this.position;
+        }
+    
         public String getID() {
             return id;
         }
-
+    
         public PointOfInterestType getPointOfInterestType() {
             return this.type;
         }
-
     }
 }
