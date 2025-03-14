@@ -18,22 +18,40 @@ class Radar {
         if (found.equals("GROUND")) {
             drone.fly(); // Safe to explore area
         } else if (found.equals("OUT_OF_RANGE")) {
-            // If no ground is detected in the current direction, decide the next direction to turn
             decideTurnDirection();
         }
     }
 
     public void decideTurnDirection() {
-        JSONObject leftScan = drone.echo("WEST"); 
-        JSONObject rightScan = drone.echo("EAST"); 
+        JSONObject leftScan = drone.echo(Drone.Direction.WEST); 
+        JSONObject rightScan = drone.echo(Drone.Direction.EAST); 
 
         int leftRange = leftScan.getJSONObject("extras").getInt("range");
         int rightRange = rightScan.getJSONObject("extras").getInt("range");
 
-        if (leftRange > rightRange) {
-            drone.turnLeft(); // Turn left
+        if (leftRange == 0 && rightRange == 0) {
+            drone.turnLeft(); 
+            drone.turnLeft();
+        } else if (leftRange >= 1 && rightRange == 0) {
+            if (leftRange == 1) { 
+                drone.turnLeft();
+                drone.turnLeft(); 
+            } else {
+                drone.turnLeft(); 
+            }
+        } else if (rightRange >= 1 && leftRange == 0) { 
+            if (rightRange == 1) { 
+                drone.turnRight();
+                drone.turnRight(); 
+            } else {
+                drone.turnRight(); 
+            }
         } else {
-            drone.turnRight(); // Turn right
+            if (leftRange > rightRange) {
+                drone.turnLeft();  // Turn left
+            } else {
+                drone.turnRight();  // Turn right
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 package ca.mcmaster.se2aa4.island.team38;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +21,8 @@ public class Explorer implements IExplorerRaid {
     private String creekId = null;
     private boolean foundCreek = false;
     private boolean lastActionScan = false;
-
+    private List<PointsOfInterest> pointsOfInterest = new ArrayList<>();
+    
     @Override
     public void initialize(String s) {
         logger.info("** Initializing the Exploration Command Center");
@@ -60,6 +63,8 @@ public class Explorer implements IExplorerRaid {
 
         int cost = response.getInt("cost");
         logger.info("The cost of the action was {}", cost);
+        batteryLevel -= cost;
+        logger.info("The remaining battery level is {}", batteryLevel);
 
         String status = response.getString("status");
         logger.info("The status of the drone is {}", status);
@@ -68,25 +73,26 @@ public class Explorer implements IExplorerRaid {
         logger.info("Additional information received: {}", extraInfo);
 
         drone.getInfo(cost, extraInfo); // Update drone info
-
         // Check if a creek is found
         if (extraInfo.has("creeks")) {
             JSONArray creeks = extraInfo.getJSONArray("creeks");
-            if (creeks.length() > 0) {
-                this.creekId = creeks.getString(0);  // Get the first creek ID
-                this.foundCreek = true;
-                logger.info("Creek found: {}", creekId);
+            for (int i = 0; i < creeks.length(); i++) {
+                String creek = creeks.getString(i);
+                logger.info("Creek found: {}", creek);
             }
-        }
+            this.foundCreek = true;
+}
     }
 
     @Override
     public String deliverFinalReport() {
-
-        if (foundCreek) { 
-            return "Creek found: " + creekId; 
-        } else { 
+        if (pointsOfInterest.isEmpty()) {
             return "No creek found";
         }
+        StringBuilder report = new StringBuilder("Creeks found: ");
+        for (PointsOfInterest point : pointsOfInterest) {
+            report.append(point); // need to append the closest creek id
+        }
+        return report.toString();
     }
 }
