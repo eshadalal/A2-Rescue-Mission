@@ -11,14 +11,19 @@ public class Radar {
     }
 
     public void processRadarData(JSONObject response) {
-        JSONObject extraInfo = response.getJSONObject("extras");
-        int range = extraInfo.getInt("range");
-        String found = extraInfo.getString("found");
+        // Check if 'extras' field exists
+        if (response.has("extras")) {
+            JSONObject extraInfo = response.getJSONObject("extras");
+            int range = extraInfo.getInt("range");
+            String found = extraInfo.getString("found");
 
-        if (found.equals("GROUND")) {
-            drone.fly(); // Safe to explore area
-        } else if (found.equals("OUT_OF_RANGE")) {
-            decideTurnDirection();
+            if (found.equals("GROUND")) {
+                drone.fly(); // Safe to explore area
+            } else if (found.equals("OUT_OF_RANGE")) {
+                decideTurnDirection();
+            }
+        } else {
+            System.out.println("No 'extras' field found in the response.");
         }
     }
 
@@ -39,22 +44,22 @@ public class Radar {
         } else if (leftRange >= 1 && rightRange == 0) {
             if (leftRange == 1) {
                 drone.turnLeft();
-                drone.turnLeft(); // Turn around if left range is minimal
+                drone.turnLeft();
             } else {
-                drone.turnLeft(); // Turn left if left range is greater
+                drone.turnLeft();
             }
         } else if (rightRange >= 1 && leftRange == 0) {
             if (rightRange == 1) {
                 drone.turnRight();
-                drone.turnRight(); // Turn around if right range is minimal
+                drone.turnRight();
             } else {
-                drone.turnRight(); // Turn right if right range is greater
+                drone.turnRight();
             }
         } else {
             if (leftRange > rightRange) {
-                drone.turnLeft(); // Turn left if left range is greater
+                drone.turnLeft();
             } else {
-                drone.turnRight(); // Turn right if right range is greater
+                drone.turnRight();
             }
         }
     }

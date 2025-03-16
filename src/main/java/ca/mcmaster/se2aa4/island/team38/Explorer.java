@@ -12,9 +12,10 @@ public class Explorer implements IExplorerRaid {
     private final Logger logger = LogManager.getLogger();
     private Drone drone;
     private BatteryManager batteryManager;
+    private Radar radar; 
     private boolean hasFoundLand = false;
     private PointsOfInterest pointsOfInterest = new PointsOfInterest();
-    private Action action;
+    private MissionControl missionControl;
 
     @Override
     public void initialize(String s) {
@@ -31,13 +32,13 @@ public class Explorer implements IExplorerRaid {
         drone = new Drone(droneDirection, initialBatteryLevel, 0, 0);
 
         batteryManager = new BatteryManager(initialBatteryLevel);
-        action = new Action(drone, batteryManager, pointsOfInterest);  
+        missionControl = new MissionControl(drone, batteryManager);  
     }
 
     @Override
     public String takeDecision() {
         JSONObject decision = new JSONObject();
-        decision.put("action", action.determineAction());  
+        decision.put("action", missionControl.determineMove());  
         logger.info("** Decision: {}", decision.toString(2));
         return decision.toString();  
     }

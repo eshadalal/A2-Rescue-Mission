@@ -41,4 +41,9 @@ public enum Direction {
         }
         throw new IllegalArgumentException("Invalid direction: " + dir);
     }
+    
+    @Override
+    public String toString() {
+        return this.dir;
+    }
 }

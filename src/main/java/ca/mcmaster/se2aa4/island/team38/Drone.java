@@ -24,6 +24,31 @@ public class Drone implements DroneController {
         this.lastActionResponse = new JSONObject(); 
     }
 
+    public void performAction(Action action) {
+        switch (action) {
+            case FLY:
+                fly();
+                break;
+            case TURN_RIGHT:
+                turnRight();
+                break;
+            case TURN_LEFT:
+                turnLeft();
+                break;
+            case SCAN:
+                scan();
+                break;
+            case STOP:
+                stop();
+                break;
+            case ECHO:
+                echo(direction);
+                break;
+            default:
+                System.out.println("Invalid action.");
+        }
+    }
+
     @Override
     public void fly() {
         if (isBatteryDepleted()) return;
