@@ -3,6 +3,9 @@ package ca.mcmaster.se2aa4.island.team38;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class PointsOfInterest {
 
     private List<PointOfInterest> creeks = new ArrayList<>();
@@ -14,16 +17,17 @@ public class PointsOfInterest {
         BIOMES;
     }
 
-    public PointsOfInterest(List<PointOfInterest> creeks) {
-        this.creeks = creeks;
+    public PointsOfInterest() {
+        this.creeks = new ArrayList<>();
+        this.emergencySite = null;
     }
 
     public void addPointOfInterest(Position position, String id, PointOfInterestType type) {
         PointOfInterest pointOfInterest = new PointOfInterest(position, id, type);
         
-        if (type.equals(PointOfInterestType.CREEKS)) {
+        if (type == (PointOfInterestType.CREEKS)) {
             this.creeks.add(pointOfInterest);
-        } else if (type.equals(PointOfInterestType.SITES)) {
+        } else if (type == (PointOfInterestType.SITES)) {
             this.emergencySite = pointOfInterest;
         }
     }
@@ -43,7 +47,7 @@ public class PointsOfInterest {
 
         double site_x = emergencySite.getX();
         double site_y = emergencySite.getY();
-        double smallestDistance = 99999;
+        double smallestDistance = Double.MAX_VALUE;
         PointOfInterest closestCreek = null;
 
         for (PointOfInterest creek : creeks) { // go through list of creeks found
@@ -57,6 +61,32 @@ public class PointsOfInterest {
         }
         return closestCreek;
     }
+
+    public static void processResponse(JSONObject extras, PointsOfInterest pointsOfInterest, Drone drone) {
+        if (extras.has("creeks")) {
+            JSONArray creeksArray = extras.getJSONArray("creeks");
+            for (int i = 0; i < creeksArray.length(); i++) {
+                String creekID = creeksArray.getString(i);
+                Position position = drone.getPosition();  
+                pointsOfInterest.addPointOfInterest(position, creekID, PointOfInterestType.CREEKS);
+            }
+        }
+
+        if (extras.has("site")) {
+            String siteID = extras.getString("site");
+            Position position = drone.getPosition();  
+            pointsOfInterest.addPointOfInterest(position, siteID, PointOfInterestType.SITES);
+        }
+    }
+
+    public String generateFinalReport(Drone drone) {    
+        if (this.getCreeks().isEmpty() || this.getEmergencySite() == null) {
+            return "No creek found or emergency site missing.";
+        }
+        return "Emergency site located at " + this.getEmergencySite().getPosition() + 
+            ", closest creek at " + this.findClosestCreek().getPosition();
+    }
+
 
     public class PointOfInterest {
     
@@ -78,7 +108,7 @@ public class PointsOfInterest {
             return position.getY();
         }
     
-        public Position getPosition() {  // ✅ FIXED: Now `Explorer` can use `getPosition()`
+        public Position getPosition() {
             return this.position;
         }
     
