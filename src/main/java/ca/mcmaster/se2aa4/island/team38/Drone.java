@@ -120,18 +120,16 @@ public class Drone implements DroneController {
 
     @Override
     public JSONObject scan() {
-        JSONObject command = new JSONObject();
-        command.put("action", "scan");
+        lastActionResponse.put("action", "scan");
         getCost("scan");
-        return command;
+        return lastActionResponse;
     }
 
     @Override
     public JSONObject stop() {
-        JSONObject command = new JSONObject();
-        command.put("action", "stop");
+        lastActionResponse.put("action", "stop");
         getCost("stop");
-        return command;
+        return lastActionResponse;
     }
 
     @Override
@@ -158,11 +156,9 @@ public class Drone implements DroneController {
         return echo(direction.turnLeft());
     }
 
-    public void logAction(String action, JSONObject response) {
+    public void logAction(String action) {
         lastActionResponse.put("action", action);
-        lastActionResponse.put("response", response);  
         System.out.println("Action performed: " + action);
-        System.out.println(response.toString(2));
     }
 
     public JSONObject getLastActionResponse() {

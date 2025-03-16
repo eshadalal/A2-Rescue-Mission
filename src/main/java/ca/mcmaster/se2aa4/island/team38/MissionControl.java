@@ -29,7 +29,6 @@ public class MissionControl {
             JSONObject echoNose = drone.echoForward();
             JSONObject echoLeft = drone.echoLeft();
             JSONObject echoRight = drone.echoRight();
-            drone.logAction("echo", new JSONObject().put("Nose", echoNose).put("Left", echoLeft).put("Right", echoRight));
 
             if (echoNose != null && echoLeft != null && echoRight != null) {
                 radar.processRadarData(echoNose);
