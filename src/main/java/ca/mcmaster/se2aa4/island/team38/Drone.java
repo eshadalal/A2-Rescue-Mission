@@ -6,68 +6,70 @@ public class Drone implements DroneController {
 
     private Direction direction;
     private Position position;
-    private int batteryLevel;
+    private BatteryManager batteryManager;
     private JSONObject lastActionResponse;
 
-    public Drone(String direction, int batteryLevel, int x, int y) {
-        this.direction = Direction.valueOf(direction.toUpperCase());
-        this.batteryLevel = batteryLevel;
+    public Drone(Direction direction, int batteryLevel, int x, int y) {
+        this.direction = direction;
         this.position = new Position(x, y);
-        this.lastActionResponse = new JSONObject();
+        this.batteryManager = new BatteryManager(batteryLevel);
+        this.lastActionResponse = new JSONObject(); 
     }
 
     @Override
     public void initialize(String direction, int batteryLevel, int x, int y) {
         this.direction = Direction.valueOf(direction.toUpperCase());
         this.position = new Position(x, y);
-        this.batteryLevel = batteryLevel;
-        logAction("initialize");  
+        this.batteryManager = new BatteryManager(batteryLevel);
+        this.lastActionResponse = new JSONObject(); 
     }
 
     @Override
     public void fly() {
-        if (batteryLevel <= 0) {
-            System.out.println("Battery depleted. Cannot fly.");
-            return;
-        }
-        switch (direction) {
-            case NORTH: 
-                position.updateY(1);
-                break;
-            case SOUTH: 
-                position.updateY(-1);
-                break;
-            case EAST: 
-                position.updateX(1);
-                break;
-            case WEST: 
-                position.updateX(-1);
-                break;
-        }
-        batteryLevel--; 
-        logAction("fly");  
+        if (isBatteryDepleted()) return;
+        moveDrone(direction);
+        getCost("fly");
     }
 
     @Override
     public void turnRight() {
-        if (batteryLevel <= 0) {
-            System.out.println("Battery depleted. Cannot turn.");
-            return;
-        }
+        if (isBatteryDepleted()) return;
         direction = direction.turnRight();
-        batteryLevel--; 
-        logAction("turnRight");  
+        getCost("heading");
     }
 
     @Override
     public void turnLeft() {
-        if (batteryLevel <= 0) {
-            System.out.println("Battery depleted. Cannot turn.");
-            return;
-        }
+        if (isBatteryDepleted()) return;
         direction = direction.turnLeft();
-        batteryLevel--; 
-        logAction("turnLeft");  
+        getCost("heading");
+    }
+
+    private boolean isBatteryDepleted() {
+        if (batteryManager.getBatteryLevel() <= 0) {
+            System.out.println("Battery depleted. Cannot perform the action.");
+            return true;
+        }
+        return false;
+    }
+
+    private void moveDrone(Direction direction) {
+        switch (direction) {
+            case NORTH: position.updateY(1); break;
+            case SOUTH: position.updateY(-1); break;
+            case EAST: position.updateX(1); break;
+            case WEST: position.updateX(-1); break;
+        }
+    }
+
+    public void getCost(String action) {
+        if (lastActionResponse != null && lastActionResponse.has("cost")) {
+            int cost = lastActionResponse.getInt("cost");
+            batteryManager.updateBatteryLevel(cost); 
+            System.out.println("Battery level after " + action + ": " + batteryManager.getBatteryLevel());
+        } else {
+            System.out.println("No cost information available for action: " + action);
+        }
     }
 
     @Override
@@ -82,20 +84,20 @@ public class Drone implements DroneController {
     }
 
     @Override
-    public String getDirection() {
-        return this.direction.name();
+    public Direction getDirection() {
+        return this.direction;
     }
 
     @Override
     public int getBatteryLevel() {
-        return this.batteryLevel;
+        return this.batteryManager.getBatteryLevel();
     }
 
     @Override
     public JSONObject scan() {
         JSONObject command = new JSONObject();
         command.put("action", "scan");
-        logAction("scan", command);  
+        getCost("scan");
         return command;
     }
 
@@ -103,7 +105,7 @@ public class Drone implements DroneController {
     public JSONObject stop() {
         JSONObject command = new JSONObject();
         command.put("action", "stop");
-        logAction("stop", command); 
+        getCost("stop");
         return command;
     }
 
@@ -112,70 +114,33 @@ public class Drone implements DroneController {
         JSONObject response = new JSONObject();
         response.put("action", "echo");
         response.put("parameters", new JSONObject().put("direction", direction.toString()));
-        response.put("extras", new JSONObject());
-
-        logAction("echo", response);  
+        getCost("echo");
         return response;
     }
 
     @Override
     public JSONObject echoForward() {
-        JSONObject response = echo(direction);
-        lastActionResponse = response;
-        return response;
+        return echo(direction);
     }
 
     @Override
     public JSONObject echoRight() {
-        JSONObject response = echo(direction.turnRight());
-        lastActionResponse = response;
-        return response;
+        return echo(direction.turnRight());
     }
 
     @Override
     public JSONObject echoLeft() {
-        JSONObject response = echo(direction.turnLeft());
-        lastActionResponse = response;
-        return response;
-    }
-
-    public void logAction(String action) {
-        lastActionResponse = new JSONObject().put("action", action);
-        System.out.println("Action performed: " + action);  
-        System.out.println(lastActionResponse.toString(2));  
+        return echo(direction.turnLeft());
     }
 
     public void logAction(String action, JSONObject response) {
-        lastActionResponse = response;
+        lastActionResponse.put("action", action);
+        lastActionResponse.put("response", response);  
         System.out.println("Action performed: " + action);
-        System.out.println(response.toString(2));  
+        System.out.println(response.toString(2));
     }
 
     public JSONObject getLastActionResponse() {
         return this.lastActionResponse;
-    }
-
-    public enum Direction {
-        NORTH, EAST, SOUTH, WEST;
-
-        public Direction turnRight() {
-            switch (this) {
-                case NORTH: return EAST;
-                case EAST: return SOUTH;
-                case SOUTH: return WEST;
-                case WEST: return NORTH;
-                default: throw new IllegalStateException("Unexpected value: " + this);
-            }
-        }
-
-        public Direction turnLeft() {
-            switch (this) {
-                case NORTH: return WEST;
-                case WEST: return SOUTH;
-                case SOUTH: return EAST;
-                case EAST: return NORTH;
-                default: throw new IllegalStateException("Unexpected value: " + this);
-            }
-        }
     }
 }

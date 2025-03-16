@@ -9,7 +9,7 @@ public class DroneTest {
 
     @BeforeEach
     void setUp() {
-        drone = new Drone("NORTH", 100, 0, 0);  // Drone starts at (0,0) facing NORTH
+        drone = new Drone(Direction.NORTH, 100, 0, 0);  // Drone starts at (0,0) facing NORTH
     }
 
     @Test
@@ -21,12 +21,12 @@ public class DroneTest {
     @Test
     void testTurnRight() {
         drone.turnRight();
-        assertEquals("EAST", drone.getDirection()); // Should be facing EAST
+        assertEquals(Direction.EAST, drone.getDirection()); // Should be facing EAST
     }
 
     @Test
     void testTurnLeft() {
         drone.turnLeft();
-        assertEquals("WEST", drone.getDirection()); // Should be facing WEST
+        assertEquals(Direction.WEST, drone.getDirection()); // Should be facing WEST
     }
 }

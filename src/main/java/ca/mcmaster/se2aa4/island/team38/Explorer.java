@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
 import eu.ace_design.island.bot.IExplorerRaid;
 
 public class Explorer implements IExplorerRaid {
@@ -26,7 +27,9 @@ public class Explorer implements IExplorerRaid {
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", initialBatteryLevel);
 
-        drone = new Drone(direction, initialBatteryLevel, 0, 0);
+        Direction droneDirection = Direction.fromDir(direction.toUpperCase());
+        drone = new Drone(droneDirection, initialBatteryLevel, 0, 0);
+
         batteryManager = new BatteryManager(initialBatteryLevel);
         action = new Action(drone, batteryManager, pointsOfInterest);  
     }

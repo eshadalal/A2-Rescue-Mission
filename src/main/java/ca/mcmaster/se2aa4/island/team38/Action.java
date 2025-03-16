@@ -16,32 +16,40 @@ public class Action {
         this.pointsOfInterest = pointsOfInterest;
     }
 
-    public String determineAction() {
+    public JSONObject determineAction() {
         JSONObject decision = new JSONObject();
 
         if (foundCreek) {
             decision.put("action", "stop");
         } else if (!hasFoundLand) {
             JSONObject echoResult = drone.echoForward();
-            drone.logAction(echoResult.toString());
-            JSONObject extras = echoResult.optJSONObject("extras");
+            drone.logAction(echoResult.toString(), echoResult);  
 
-            if (extras != null && extras.has("found")) {
-                String found = extras.getString("found");
-                if (found.equals("GROUND")) {
-                    hasFoundLand = true;
+            if (echoResult != null) {
+                JSONObject extras = echoResult.optJSONObject("extras");
+                if (extras != null && extras.has("found")) {
+                    String found = extras.getString("found");
+                    if ("GROUND".equals(found)) {
+                        hasFoundLand = true;  
+                        decision.put("action", "land");
+                    } else {
+                        drone.turnLeft();  
+                        decision.put("action", "turn_left");
+                    }
                 } else {
-                    drone.turnLeft();
+                    System.out.println("Warning: 'extras' or 'found' key missing in echo response.");
+                    decision.put("action", "scan");  
                 }
             } else {
-                System.out.println("Warning: Missing 'found' key in echo response.");
-                decision.put("action", "scan");  // Default safe action
+                System.out.println("Warning: echoResult is null.");
+                decision.put("action", "scan"); 
             }
         } else {
-            decision.put("action", "scan");
+            decision.put("action", "scan");  
         }
 
         System.out.println("Decision made: " + decision.toString());
-        return decision.toString();
+        return decision;
     }
+
 }
