@@ -10,57 +10,52 @@ public class Radar {
         this.drone = drone;
     }
 
-    public void processRadarData(JSONObject response) {
-        // Check if 'extras' field exists
+    public boolean processRadarData(JSONObject response) {
         if (response.has("extras")) {
             JSONObject extraInfo = response.getJSONObject("extras");
             int range = extraInfo.getInt("range");
             String found = extraInfo.getString("found");
 
             if (found.equals("GROUND")) {
-                drone.fly(); // Safe to explore area
+                return true;
             } else if (found.equals("OUT_OF_RANGE")) {
+                // If out of range, decide on a turn direction
                 decideTurnDirection();
             }
         } else {
             System.out.println("No 'extras' field found in the response.");
         }
+        return false;
     }
 
     public void decideTurnDirection() {
-        // Get the current direction of the drone
-        Direction currentDirection = drone.getDirection();
+        JSONObject leftScan = drone.echoLeft();
+        JSONObject rightScan = drone.echoRight();
 
-        // Scan the left and right directions
-        JSONObject leftScan = drone.echo(currentDirection.turnLeft());
-        JSONObject rightScan = drone.echo(currentDirection.turnRight());
+        if (leftScan != null && rightScan != null) {
+            int leftRange = leftScan.getJSONObject("extras").getInt("range");
+            int rightRange = rightScan.getJSONObject("extras").getInt("range");
 
-        int leftRange = leftScan.getJSONObject("extras").getInt("range");
-        int rightRange = rightScan.getJSONObject("extras").getInt("range");
-
-        if (leftRange == 0 && rightRange == 0) {
-            drone.turnLeft();
-            drone.turnLeft(); // Turn around if both directions are blocked
-        } else if (leftRange >= 1 && rightRange == 0) {
-            if (leftRange == 1) {
+            if (leftRange == 0 && rightRange == 0) {
+                // Turn around if both directions are blocked
                 drone.turnLeft();
                 drone.turnLeft();
-            } else {
+            } else if (leftRange >= 1 && rightRange == 0) {
+                // If only left direction has a valid range, turn left
                 drone.turnLeft();
-            }
-        } else if (rightRange >= 1 && leftRange == 0) {
-            if (rightRange == 1) {
-                drone.turnRight();
+            } else if (rightRange >= 1 && leftRange == 0) {
+                // If only right direction has a valid range, turn right
                 drone.turnRight();
             } else {
-                drone.turnRight();
+                // If both directions are valid, choose the direction with the greater range
+                if (leftRange > rightRange) {
+                    drone.turnLeft();
+                } else {
+                    drone.turnRight();
+                }
             }
         } else {
-            if (leftRange > rightRange) {
-                drone.turnLeft();
-            } else {
-                drone.turnRight();
-            }
+            System.out.println("Error: Invalid scan data, unable to determine direction.");
         }
     }
 }
