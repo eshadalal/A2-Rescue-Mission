@@ -2,7 +2,7 @@ package ca.mcmaster.se2aa4.island.team38;
 
 import org.json.JSONObject;
 
-public class Drone {
+public class Drone implements DroneController {
 
     private Direction direction;
     private Position position;
@@ -14,6 +14,7 @@ public class Drone {
         this.batteryManager = new BatteryManager(battery); 
     }
 
+    @Override
     public JSONObject fly() {
         JSONObject request = new JSONObject();
         request.put("action", "fly");
@@ -21,6 +22,7 @@ public class Drone {
         return request;
     }
 
+    @Override
     public JSONObject turnRight() {
         JSONObject request = new JSONObject();
         request.put("action", "heading");
@@ -29,6 +31,7 @@ public class Drone {
         return request;
     }
 
+    @Override
     public JSONObject turnLeft() {
         JSONObject request = new JSONObject();
         request.put("action", "heading");
@@ -37,6 +40,7 @@ public class Drone {
         return request;
     }
 
+    @Override
     public JSONObject scan() {
         JSONObject request = new JSONObject();
         request.put("action", "scan");
@@ -44,6 +48,7 @@ public class Drone {
         return request;
     }
 
+    @Override
     public JSONObject stop() {
         JSONObject request = new JSONObject();
         request.put("action", "stop");
@@ -51,6 +56,7 @@ public class Drone {
         return request;
     }
 
+    @Override
     public JSONObject echoForward() {
         JSONObject request = new JSONObject();
         request.put("action", "echo");
@@ -59,6 +65,7 @@ public class Drone {
         return request;
     }
 
+    @Override
     public JSONObject echoRight() {
         JSONObject request = new JSONObject();
         request.put("action", "echo");
@@ -67,6 +74,7 @@ public class Drone {
         return request;
     }
 
+    @Override
     public JSONObject echoLeft() {
         JSONObject request = new JSONObject();
         request.put("action", "echo");
@@ -75,12 +83,14 @@ public class Drone {
         return request;
     }
 
+    @Override
     public void updateBattery(String action) {
         int cost = getActionCost(action);  
         batteryManager.decreaseBattery(cost); 
     }
 
-    private int getActionCost(String action) {
+    @Override
+    public int getActionCost(String action) {
         switch (action) {
             case "fly":
                 return 2;
@@ -96,7 +106,7 @@ public class Drone {
                 return 0;
         }
     }
-
+    
     public Position getPosition() {
         return this.position;
     }

@@ -9,7 +9,7 @@
 
 //     @BeforeEach
 //     void setUp() {
-//         drone = new Drone(Direction.NORTH, 100, 0, 0);  // Drone starts at (0,0) facing NORTH
+//         drone = new Drone(Direction.NORTH, 100, 0, 0);  
 //     }
 
 //     @Test
