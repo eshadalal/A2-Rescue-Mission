@@ -3,92 +3,53 @@ package ca.mcmaster.se2aa4.island.team38;
 import org.json.JSONObject;
 
 public class MissionControl {
-
     private Drone drone;
     private BatteryManager batteryManager;
-    private boolean hasFoundLand = false;
-    private boolean foundCreek = false;
-    private Radar radar;
-    private Action action;
+    private PointsOfInterest pointsOfInterest;
 
     public MissionControl(Drone drone, BatteryManager batteryManager) {
         this.drone = drone;
         this.batteryManager = batteryManager;
-        this.radar = new Radar(drone);
+        this.pointsOfInterest = new PointsOfInterest();
     }
 
     public JSONObject determineMove() {
-        JSONObject decision = new JSONObject();
-
-        if (batteryManager.getBatteryLevel() < 5 || foundCreek) {
-            decision.put("action", "stop");
-            return decision;
+        if (batteryManager.getBatteryLevel() < 10) {
+            return drone.stop();
         }
 
-        if (!hasFoundLand) {
-            JSONObject echoNose = drone.echoForward();
-            JSONObject echoLeft = drone.echoLeft();
-            JSONObject echoRight = drone.echoRight();
-
-            if (echoNose != null && echoLeft != null && echoRight != null) {
-                if (radar.processRadarData(echoNose) || radar.processRadarData(echoLeft) || radar.processRadarData(echoRight)) {
-                    hasFoundLand = true;
-                    decision.put("action", "scan");
-                } else {
-                    decision.put("action", "fly");
-                }
-            } else {
-                decision.put("action", "turnLeft");  
-            }
-        } else {
-            decision.put("action", "scan");
+        JSONObject scan = drone.scan();
+        if (scan.has("extras")) {
+            JSONObject extras = scan.getJSONObject("extras");
+            PointsOfInterest.processResponse(extras, pointsOfInterest, drone);
         }
 
-        detectCreek(decision);
-        System.out.println("Decision made: " + decision.toString());
-        return decision;
+        if (pointsOfInterest.hasEmergencySite()) {
+            return planReturnPath();
+        }
+        return followCoastline();
     }
 
-    public void detectCreek(JSONObject decision) {
-        JSONObject scanResult = drone.scan();
-        if (scanResult != null && scanResult.has("extras")) {
-            JSONObject extras = scanResult.getJSONObject("extras");
+    private JSONObject followCoastline() {
+        // Coastline following logic
+        return drone.fly();
+    }
 
-            if (extras.has("creeks") && extras.getJSONArray("creeks").length() > 0) {
-                foundCreek = true;
-                decision.put("action", "stop");
-                System.out.println("Creek detected, stopping.");
+    private JSONObject planReturnPath() {
+        // Pathfinding logic
+        return drone.fly();
+    }
+
+    public void acknowledgeResults(JSONObject result) {
+        if (result.getString("status").equals("OK")) {
+            JSONObject extras = result.optJSONObject("extras");
+            if (extras != null) {
+                PointsOfInterest.processResponse(extras, pointsOfInterest, drone);
             }
         }
     }
 
-    public JSONObject takeAction() {
-        switch (this.action) {
-            case SCAN -> {
-                return drone.scan();
-            }
-            case ECHOFORWARD -> {
-                return drone.echoForward();
-            }
-            case ECHORIGHT -> {
-                return drone.echoRight();
-            }
-            case ECHOLEFT -> {
-                return drone.echoLeft();
-            }
-            case FLY -> {
-                return drone.fly();
-            }
-            case TURNRIGHT -> {
-                return drone.turnRight();
-            }
-            case TURNLEFT -> {
-                return drone.turnLeft();
-            }
-            case STOP -> {
-                return drone.stop();
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + this.action);
-        }
+    public String deliverFinalReport() {
+        return pointsOfInterest.generateFinalReport();
     }
 }

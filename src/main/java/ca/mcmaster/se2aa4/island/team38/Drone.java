@@ -11,26 +11,38 @@ public class Drone implements DroneController {
     public Drone(Direction direction, int battery, int x, int y) {
         this.direction = direction;
         this.position = new Position(x, y);
-        this.batteryManager = new BatteryManager(battery); 
+        this.batteryManager = new BatteryManager(battery);
     }
 
     @Override
     public JSONObject fly() {
+        updatePositionAfterFly();
         JSONObject request = new JSONObject();
         request.put("action", "fly");
         updateBattery("fly");
         return request;
     }
 
+    private void updatePositionAfterFly() {
+        switch (direction.toString()) {
+            case "N": position.updateY(1); break;
+            case "S": position.updateY(-1); break;
+            case "E": position.updateX(1); break;
+            case "W": position.updateX(-1); break;
+        }
+    }
+
     @Override
     public JSONObject turnRight() {
+        this.direction = this.direction.turnRight();
         JSONObject request = new JSONObject();
         request.put("action", "heading");
-        request.put("parameters", new JSONObject().put("direction", this.direction.turnRight().toString()));
+        request.put("parameters", new JSONObject().put("direction", this.direction.toString()));
         updateBattery("heading");
         return request;
     }
 
+    
     @Override
     public JSONObject turnLeft() {
         JSONObject request = new JSONObject();

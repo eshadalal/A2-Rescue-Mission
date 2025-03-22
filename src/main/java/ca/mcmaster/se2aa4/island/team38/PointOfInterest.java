@@ -4,10 +4,10 @@ public class PointOfInterest {
 
     private Position position;
     private String id;
-    private PointsOfInterest.PointOfInterestType type;
+    private PointOfInterestType type;
 
-    public PointOfInterest(Position position, String id, PointsOfInterest.PointOfInterestType type) {
-        this.position = new Position(position.getX(), position.getY());  
+    public PointOfInterest(Position position, String id, PointOfInterestType type) {
+        this.position = new Position(position.getX(), position.getY());
         this.id = id;
         this.type = type;
     }
@@ -21,14 +21,23 @@ public class PointOfInterest {
     }
 
     public Position getPosition() {
-        return this.position;
+        return position;
     }
 
     public String getID() {
         return id;
     }
 
-    public PointsOfInterest.PointOfInterestType getPointOfInterestType() {
-        return this.type;
+    public PointOfInterestType getType() {
+        return type;
+    }
+
+    @Override
+    public String toString() {
+        return "PointOfInterest{" +
+                "position=" + position +
+                ", id='" + id + '\'' +
+                ", type=" + type +
+                '}';
     }
 }
