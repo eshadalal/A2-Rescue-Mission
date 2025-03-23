@@ -45,6 +45,7 @@ public class Drone implements DroneController {
     
     @Override
     public JSONObject turnLeft() {
+        this.direction = this.direction.turnLeft();
         JSONObject request = new JSONObject();
         request.put("action", "heading");
         request.put("parameters", new JSONObject().put("direction", this.direction.turnLeft().toString()));

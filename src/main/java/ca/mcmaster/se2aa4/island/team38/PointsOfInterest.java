@@ -1,9 +1,10 @@
 package ca.mcmaster.se2aa4.island.team38;
 
-import org.json.JSONObject;
-import org.json.JSONArray;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class PointsOfInterest {
     private List<PointOfInterest> creeks = new ArrayList<>();
