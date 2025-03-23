@@ -45,11 +45,14 @@ public class PointsOfInterest {
         }
     }
 
-    public String generateFinalReport() {
+    public String generateFinalReport(Position dronePosition) {
         if (emergencySite == null || creeks.isEmpty()) {
             return "No emergency site or creeks found.";
         }
-        return "Emergency site found. Closest creek: " + creeks.get(0).getID();
+
+        PointOfInterest closestCreek = loadClosestCreek(dronePosition);
+
+        return "Emergency site found. Closest creek: " + closestCreek.getID();
     }
 
     public List<PointOfInterest> getCreeks() {
@@ -66,4 +69,12 @@ public class PointsOfInterest {
         }
         return "No emergency site found.";
     }
+
+    public PointOfInterest loadClosestCreek(Position dronePosition) {
+        if (emergencySite == null || creeks.isEmpty()) {
+            return null; 
+        }
+        return dronePosition.findClosestCreek(creeks, emergencySite);
+    }
+
 }

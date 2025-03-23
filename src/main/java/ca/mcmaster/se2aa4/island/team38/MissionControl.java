@@ -50,6 +50,6 @@ public class MissionControl {
     }
 
     public String deliverFinalReport() {
-        return pointsOfInterest.generateFinalReport();
+        return pointsOfInterest.generateFinalReport(drone.getPosition());
     }
 }
