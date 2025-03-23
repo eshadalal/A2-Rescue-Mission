@@ -40,4 +40,5 @@ public class PointOfInterest {
                 ", type=" + type +
                 '}';
     }
+
 }

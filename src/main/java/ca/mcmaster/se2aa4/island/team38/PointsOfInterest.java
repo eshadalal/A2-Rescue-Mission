@@ -24,19 +24,23 @@ public class PointsOfInterest {
     }
 
     public static void processResponse(JSONObject extras, PointsOfInterest poi, Drone drone) {
+        // Process creeks
         if (extras.has("creeks")) {
-            JSONArray creeks = extras.getJSONArray("creeks");
-            for (int i = 0; i < creeks.length(); i++) {
-                String id = creeks.getString(i);
-                poi.addPointOfInterest(drone.getPosition(), id, PointOfInterestType.CREEK);
+            JSONArray creeksArray = extras.getJSONArray("creeks");
+            for (int i = 0; i < creeksArray.length(); i++) {
+                String id = creeksArray.getString(i);
+                Position dronePosition = drone.getPosition();
+                poi.addPointOfInterest(dronePosition, id, PointOfInterestType.CREEK);
             }
         }
 
+        // Process sites
         if (extras.has("sites")) {
-            JSONArray sites = extras.getJSONArray("sites");
-            for (int i = 0; i < sites.length(); i++) {
-                String id = sites.getString(i);
-                poi.addPointOfInterest(drone.getPosition(), id, PointOfInterestType.SITE);
+            JSONArray sitesArray = extras.getJSONArray("sites");
+            for (int i = 0; i < sitesArray.length(); i++) {
+                String id = sitesArray.getString(i);
+                Position dronePosition = drone.getPosition();
+                poi.addPointOfInterest(dronePosition, id, PointOfInterestType.SITE);
             }
         }
     }
@@ -46,5 +50,20 @@ public class PointsOfInterest {
             return "No emergency site or creeks found.";
         }
         return "Emergency site found. Closest creek: " + creeks.get(0).getID();
+    }
+
+    public List<PointOfInterest> getCreeks() {
+        return new ArrayList<>(creeks);
+    }
+
+    public PointOfInterest getEmergencySite() {
+        return emergencySite;
+    }
+
+    public String getSiteID() {
+        if (emergencySite != null) {
+            return emergencySite.getID();
+        }
+        return "No emergency site found.";
     }
 }

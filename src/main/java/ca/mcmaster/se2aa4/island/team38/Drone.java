@@ -7,6 +7,8 @@ public class Drone implements DroneController {
     private Direction direction;
     private Position position;
     private BatteryManager batteryManager;
+    private int y; 
+    private int x; 
 
     public Drone(Direction direction, int battery, int x, int y) {
         this.direction = direction;
@@ -14,8 +16,20 @@ public class Drone implements DroneController {
         this.batteryManager = new BatteryManager(battery);
     }
 
+    public void startCoordinates() { 
+        y = 0;
+        x = 0;
+    }
+
+    private boolean batteryCheck() {
+        return batteryManager.getBatteryLevel() > 10;
+    }
+
     @Override
     public JSONObject fly() {
+        if (!batteryCheck()) {
+            return stop();
+        }
         updatePositionAfterFly();
         JSONObject request = new JSONObject();
         request.put("action", "fly");
@@ -34,6 +48,9 @@ public class Drone implements DroneController {
 
     @Override
     public JSONObject turnRight() {
+        if (!batteryCheck()) {
+            return stop();
+        }
         this.direction = this.direction.turnRight();
         JSONObject request = new JSONObject();
         request.put("action", "heading");
@@ -45,16 +62,22 @@ public class Drone implements DroneController {
     
     @Override
     public JSONObject turnLeft() {
+        if (!batteryCheck()) {
+            return stop();
+        }
         this.direction = this.direction.turnLeft();
         JSONObject request = new JSONObject();
         request.put("action", "heading");
-        request.put("parameters", new JSONObject().put("direction", this.direction.turnLeft().toString()));
+        request.put("parameters", new JSONObject().put("direction", this.direction.toString()));
         updateBattery("heading");
         return request;
     }
 
     @Override
     public JSONObject scan() {
+        if (!batteryCheck()) {
+            return stop();
+        }
         JSONObject request = new JSONObject();
         request.put("action", "scan");
         updateBattery("scan");
@@ -71,6 +94,9 @@ public class Drone implements DroneController {
 
     @Override
     public JSONObject echoForward() {
+        if (!batteryCheck()) {
+            return stop();
+        }
         JSONObject request = new JSONObject();
         request.put("action", "echo");
         request.put("parameters", new JSONObject().put("direction", this.direction.toString()));
@@ -80,6 +106,9 @@ public class Drone implements DroneController {
 
     @Override
     public JSONObject echoRight() {
+        if (!batteryCheck()) {
+            return stop();
+        }
         JSONObject request = new JSONObject();
         request.put("action", "echo");
         request.put("parameters", new JSONObject().put("direction", this.direction.turnRight().toString()));
@@ -89,6 +118,9 @@ public class Drone implements DroneController {
 
     @Override
     public JSONObject echoLeft() {
+        if (!batteryCheck()) {
+            return stop();
+        }
         JSONObject request = new JSONObject();
         request.put("action", "echo");
         request.put("parameters", new JSONObject().put("direction", this.direction.turnLeft().toString()));
@@ -128,7 +160,9 @@ public class Drone implements DroneController {
         return this.direction;
     }
 
+    @Override
     public int getBatteryLevel() {
-        return this.batteryManager.getBatteryLevel(); 
+        return batteryManager.getBatteryLevel();
     }
+
 }

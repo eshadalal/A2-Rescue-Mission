@@ -12,7 +12,7 @@ class DroneTest {
 
     @BeforeEach
     void setUp() {
-        drone = new Drone(Direction.NORTH, 10, 0, 0);
+        drone = new Drone(Direction.NORTH, 20, 0, 0);
     }
 
     @Test
@@ -21,7 +21,7 @@ class DroneTest {
         assertEquals(0, drone.getPosition().getX());
         assertEquals(0, drone.getPosition().getY());
         assertEquals(Direction.NORTH, drone.getDirection());
-        assertEquals(10, drone.getBatteryLevel());
+        assertEquals(20, drone.getBatteryLevel());
     }
 
     @Test
@@ -29,7 +29,7 @@ class DroneTest {
         JSONObject response = drone.fly();
         assertNotNull(response);
         assertEquals("fly", response.getString("action"));
-        assertEquals(8, drone.getBatteryLevel());  // Battery should decrease by 2
+        assertEquals(18, drone.getBatteryLevel());  // Battery should decrease by 2
         assertEquals(1, drone.getPosition().getY());  // Position should update according to direction
     }
 
@@ -39,7 +39,7 @@ class DroneTest {
         assertNotNull(response);
         assertEquals("heading", response.getString("action"));
         assertEquals(Direction.EAST, drone.getDirection());  // Direction should change to East
-        assertEquals(6, drone.getBatteryLevel());  // Battery should decrease by 4
+        assertEquals(16, drone.getBatteryLevel());  // Battery should decrease by 4
     }
 
     @Test
@@ -48,7 +48,7 @@ class DroneTest {
         assertNotNull(response);
         assertEquals("heading", response.getString("action"));
         assertEquals(Direction.WEST, drone.getDirection());  // Direction should change to West
-        assertEquals(6, drone.getBatteryLevel());  // Battery should decrease by 4
+        assertEquals(16, drone.getBatteryLevel());  // Battery should decrease by 4
     }
 
     @Test
@@ -56,7 +56,7 @@ class DroneTest {
         JSONObject response = drone.scan();
         assertNotNull(response);
         assertEquals("scan", response.getString("action"));
-        assertEquals(8, drone.getBatteryLevel());  // Battery should decrease by 2
+        assertEquals(18, drone.getBatteryLevel());  // Battery should decrease by 2
     }
 
     @Test
@@ -64,7 +64,7 @@ class DroneTest {
         JSONObject response = drone.stop();
         assertNotNull(response);
         assertEquals("stop", response.getString("action"));
-        assertEquals(7, drone.getBatteryLevel());  // Battery should decrease by 3
+        assertEquals(17, drone.getBatteryLevel());  // Battery should decrease by 3
     }
 
     @Test
@@ -72,7 +72,7 @@ class DroneTest {
         JSONObject response = drone.echoForward();
         assertNotNull(response);
         assertEquals("echo", response.getString("action"));
-        assertEquals(9, drone.getBatteryLevel());  // Battery should decrease by 1
+        assertEquals(19, drone.getBatteryLevel());  // Battery should decrease by 1
     }
 
     @Test
@@ -80,7 +80,7 @@ class DroneTest {
         JSONObject response = drone.echoRight();
         assertNotNull(response);
         assertEquals("echo", response.getString("action"));
-        assertEquals(9, drone.getBatteryLevel());  // Battery should decrease by 1
+        assertEquals(19, drone.getBatteryLevel());  // Battery should decrease by 1
     }
 
     @Test
@@ -88,18 +88,18 @@ class DroneTest {
         JSONObject response = drone.echoLeft();
         assertNotNull(response);
         assertEquals("echo", response.getString("action"));
-        assertEquals(9, drone.getBatteryLevel());  // Battery should decrease by 1
+        assertEquals(19, drone.getBatteryLevel());  // Battery should decrease by 1
     }
 
     @Test
     void testBatteryLevel() {
-        assertEquals(10, drone.getBatteryLevel());
+        assertEquals(20, drone.getBatteryLevel());
         
         drone.fly();
         drone.turnLeft();
         drone.scan();
         
-        assertEquals(2, drone.getBatteryLevel());  // Battery should be 2
+        assertEquals(12, drone.getBatteryLevel());  // Battery should be 2
     }
 
 }

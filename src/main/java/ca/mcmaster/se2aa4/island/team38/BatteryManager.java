@@ -8,16 +8,12 @@ public class BatteryManager {
         this.batteryLevel = initialBatteryLevel;
     }
 
-    public boolean decreaseBattery(int cost) {
+    public void decreaseBattery(int cost) {
         batteryLevel -= cost;
-        return true;
     }
 
     public int getBatteryLevel() {
         return batteryLevel;
     }
 
-    public boolean isBatteryDepleted() {
-        return batteryLevel <= 0;
-    }
 }
