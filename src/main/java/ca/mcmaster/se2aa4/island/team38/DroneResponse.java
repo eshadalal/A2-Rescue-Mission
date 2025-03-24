@@ -8,7 +8,7 @@ public class DroneResponse {
     private JSONObject extras; // Additional extras included in the response
     private String status; // The status of the drone given in the response
 
-    DroneResponse(JSONObject response) {
+    public DroneResponse(JSONObject response) {
         this.cost = response.getInt("cost");
         this.status = response.getString("status");
         this.extras = response.getJSONObject("extras");

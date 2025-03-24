@@ -27,6 +27,7 @@ public class Explorer implements IExplorerRaid {
         Integer batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
+        this.action = new DecideAction(Stage.START); 
         this.missionControl = new MissionControl();
 
     }

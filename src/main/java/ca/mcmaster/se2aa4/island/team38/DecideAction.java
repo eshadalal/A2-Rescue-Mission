@@ -20,11 +20,12 @@ public class DecideAction {
         this.lastDecisionWasScan = false;
         this.rightScan = false;
         this.moveCount = 0;
+        this.action = new JSONObject();
+        this.nextDecision = new JSONObject();
     }
-
+    
     public void chooseAction(Drone drone, DroneResponse response, PointsOfInterest map) {
         this.drone = drone; 
-        action = null;
 
         if (stage == Stage.OUT_OF_RANGE) {
             handleOutOfRange(response);
@@ -34,10 +35,13 @@ public class DecideAction {
             handleBiomeScan(response, map);
         }
 
+        action = new JSONObject();
+
         switch (stage) {
             case START:
                 performEchoActions();
                 action = flyForward();
+                break; 
 
             case TURN:
                 action = decideTurn(response);
@@ -45,6 +49,7 @@ public class DecideAction {
 
             case ECHO:
                 performEchoActions();
+                action = moveForwardInRange(response);
                 stage = Stage.FIND_ISLAND;
                 break;
 
@@ -108,18 +113,12 @@ public class DecideAction {
         }
     }
 
-    private void performEchoActions() {
-        forwardEcho();
-        rightEcho();
-        leftEcho();
-    }
-
     private JSONObject decideTurn(DroneResponse response) {
         if (response.getIntRange() <= 0) {
             leftTurn();
             return flyForward();
         } else {
-            forwardEcho();
+            performEchoActions();
             return flyForward();
         }
     }
@@ -153,7 +152,7 @@ public class DecideAction {
     }
 
     public String getLastScan() {
-        return prevScan != null ? prevScan.toString() : "{}";
+        return prevScan != null ? prevScan.toString() : " ";
     }
 
     private JSONObject getBackInRange() {
@@ -171,6 +170,12 @@ public class DecideAction {
 
     private JSONObject stopDrone() {
         return setAction(Action.STOP);
+    }
+
+    private void performEchoActions() {
+        forwardEcho();
+        rightEcho();
+        leftEcho();
     }
 
     private JSONObject forwardEcho() {
