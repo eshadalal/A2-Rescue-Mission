@@ -12,7 +12,8 @@ public class PointsOfInterest {
     private List<String> biomes = new ArrayList<>();
 
     public void addPointOfInterest(Position position, String id, PointOfInterestType type) {
-        PointOfInterest poi = new PointOfInterest(position, id, type);
+        PointOfInterest poi = PointOfInterestFactory.createPointOfInterest(position, id, type);
+        
         if (type == PointOfInterestType.CREEK) {
             creeks.add(poi);
         } else if (type == PointOfInterestType.SITE) {
@@ -81,5 +82,4 @@ public class PointsOfInterest {
         }
         return dronePosition.findClosestCreek(creeks, emergencySite);
     }
-
 }
