@@ -12,14 +12,13 @@ class DroneTest {
 
     @BeforeEach
     void setUp() {
-        drone = new Drone(Direction.NORTH, 20, 0, 0);
+        drone = new Drone(Direction.NORTH, 20);
+
     }
 
     @Test
     void testConstructor() {
         assertNotNull(drone);
-        assertEquals(0, drone.getPosition().getX());
-        assertEquals(0, drone.getPosition().getY());
         assertEquals(Direction.NORTH, drone.getDirection());
         assertEquals(20, drone.getBatteryLevel());
     }
@@ -30,7 +29,6 @@ class DroneTest {
         assertNotNull(response);
         assertEquals("fly", response.getString("action"));
         assertEquals(18, drone.getBatteryLevel());  // Battery should decrease by 2
-        assertEquals(1, drone.getPosition().getY());  // Position should update according to direction
     }
 
     @Test

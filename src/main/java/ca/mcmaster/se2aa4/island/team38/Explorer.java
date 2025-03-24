@@ -15,6 +15,8 @@ public class Explorer implements IExplorerRaid {
     private Drone drone;
     private BatteryManager batteryManager;
     private MissionControl missionControl;
+    private DroneResponse response; 
+    private DecideAction action;
 
     @Override
     public void initialize(String s) {
@@ -25,15 +27,13 @@ public class Explorer implements IExplorerRaid {
         Integer batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
-        this.drone = new Drone(Direction.EAST, batteryLevel, 0, 0);
-        this.batteryManager = new BatteryManager(batteryLevel);
-        this.missionControl = new MissionControl(drone, batteryManager);
+        this.missionControl = new MissionControl();
 
     }
 
     @Override
     public String takeDecision() {
-        JSONObject decision = missionControl.determineMove();
+        JSONObject decision = missionControl.getMove();
         logger.info("** Decision: {}", decision.toString());
         JSONObject response = new JSONObject();
         response.put("action", decision.getString("action"));

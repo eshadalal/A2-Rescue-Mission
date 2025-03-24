@@ -5,34 +5,48 @@ import org.json.JSONObject;
 public class MissionControl {
     private Drone drone;
     private BatteryManager batteryManager;
-    private PointsOfInterest pointsOfInterest;
-    // private DecideAction action;
+    private DecideAction action;
+    private DroneResponse response;
+    private String prevScan;
+    private Position dronePos;
+    private PointsOfInterest poi;
+    private JSONObject move;
 
-    public MissionControl(Drone drone, BatteryManager batteryManager) {
-        this.drone = drone;
-        this.batteryManager = batteryManager;
-        this.pointsOfInterest = new PointsOfInterest();
+    public void initialize(Direction direction, Integer batteryLevel) {
+        action = new DecideAction(Stage.START);
+        response = new DroneResponse(new JSONObject());
+        dronePos = new Position(0, 0);
+        poi = new PointsOfInterest();
+        batteryManager = new BatteryManager(batteryLevel);
+        drone = new Drone(direction, batteryLevel);
     }
 
-    public JSONObject determineMove() {
-        if (batteryManager.getBatteryLevel() < 10) {
-            return drone.stop();
+    public void determineMove() {
+        action.chooseAction(drone, response, poi);
+        move = action.getDecision();
+        response = new DroneResponse(move);
+        if (action.lastActionScan()) {
+            prevScan = action.getLastScan();
         }
-        
-        return drone.echoForward(); // placeholder for now 
-        // return action.chooseAction(Drone drone, DroneResponse response, PointsOfInterest map);
+        drone.updatePositionAfterFly(response.getHeading(), move);
+    }
+
+    public JSONObject getMove() {
+        this.determineMove();
+        JSONObject actionCopy = move;
+        return actionCopy;
     }
 
     public void acknowledgeResults(JSONObject result) {
         if (result.getString("status").equals("OK")) {
             JSONObject extras = result.optJSONObject("extras");
             if (extras != null) {
-                PointsOfInterest.processResponse(extras, pointsOfInterest, drone);
+                PointsOfInterest.processResponse(extras, poi, drone);
             }
         }
     }
 
     public String deliverFinalReport() {
-        return pointsOfInterest.generateFinalReport(drone.getPosition());
+        return poi.generateFinalReport(drone.getPosition());
     }
 }

@@ -7,18 +7,11 @@ public class Drone implements DroneController {
     private Direction direction;
     private Position position;
     private BatteryManager batteryManager;
-    private int y; 
-    private int x; 
 
-    public Drone(Direction direction, int battery, int x, int y) {
+    public Drone(Direction direction, int battery) {
         this.direction = direction;
-        this.position = new Position(x, y);
         this.batteryManager = new BatteryManager(battery);
-    }
-
-    public void startCoordinates() { 
-        y = 0;
-        x = 0;
+        this.position = new Position(0, 0);
     }
 
     private boolean batteryCheck() {
@@ -30,15 +23,15 @@ public class Drone implements DroneController {
         if (!batteryCheck()) {
             return stop();
         }
-        updatePositionAfterFly();
         JSONObject request = new JSONObject();
         request.put("action", "fly");
+        updatePositionAfterFly(direction.toString(), request);
         updateBattery("fly");
         return request;
     }
 
-    private void updatePositionAfterFly() {
-        switch (direction.toString()) {
+    public void updatePositionAfterFly(String direction, JSONObject move) {
+        switch (direction) {
             case "N": position.updateY(1); break;
             case "S": position.updateY(-1); break;
             case "E": position.updateX(1); break;

@@ -26,11 +26,11 @@ public class DroneResponse {
         return this.status;
     }
 
-    public String getRange(String prevScan) { 
+    public String getRange() { 
         return this.extras.getString("found");
     }
 
-    public int getRange() { 
+    public int getIntRange() { 
         return this.extras.getInt("range");
     }
 
