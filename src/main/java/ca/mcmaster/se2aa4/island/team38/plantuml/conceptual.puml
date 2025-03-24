@@ -1,0 +1,78 @@
+@startuml
+' DroneController Interface
+interface DroneController
+
+' Position class
+class Position
+
+' Direction class
+class Direction
+
+' BatteryManager class
+class BatteryManager
+
+' Action enum
+enum Action
+
+' Drone class
+class Drone
+
+' DroneResponse class
+class DroneResponse
+
+' Command Interface and Concrete Command Classes
+interface DroneCommand
+class ScanCommand
+class TurnLeftCommand
+class TurnRightCommand
+class StopCommand
+class EchoForwardCommand
+class EchoRightCommand
+class EchoLeftCommand
+
+' PointOfInterest class and types
+class PointOfInterest
+enum PointOfInterestType
+
+' PointsOfInterest class
+class PointsOfInterest
+
+' Stage Enum
+enum Stage
+
+' Runner class
+class Runner
+
+' Explorer Class
+class Explorer
+
+' MissionControl Class
+class MissionControl
+
+' PointOfInterestFactory class
+class PointOfInterestFactory
+
+' DecideAction Class
+class DecideAction
+
+' Relationships
+DroneController <|-- Drone
+Position "1" *-- "1" Drone
+Direction "1" *-- "1" Drone
+BatteryManager "1" *-- "1" Drone
+Action "1" *-- "*" Drone
+DecideAction "1" *-- "1" Drone
+MissionControl "1" *-- "1" Drone
+Explorer "1" *-- "1" DecideAction
+DroneCommand <|.. ScanCommand
+DroneCommand <|.. TurnLeftCommand
+DroneCommand <|.. TurnRightCommand
+DroneCommand <|.. StopCommand
+DroneCommand <|.. EchoForwardCommand
+DroneCommand <|.. EchoRightCommand
+DroneCommand <|.. EchoLeftCommand
+PointsOfInterest "1" *-- "*" PointOfInterest
+PointOfInterestType "1" o-- "*" PointOfInterest
+Explorer "1" *-- "1" MissionControl
+Runner "1" -- "1" Explorer
+@enduml

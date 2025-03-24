@@ -1,0 +1,283 @@
+@startuml
+' DroneController Interface
+interface DroneController {
+    +fly() : JSONObject
+    +turnRight() : JSONObject
+    +turnLeft() : JSONObject
+    +scan() : JSONObject
+    +stop() : JSONObject
+    +echoForward() : JSONObject
+    +echoRight() : JSONObject
+    +echoLeft() : JSONObject
+    +updateBattery(action: String) : void
+    +getActionCost(action: Action) : int
+    +getPosition() : Position
+    +getDirection() : Direction
+    +getBatteryLevel() : int
+}
+
+' Position class
+class Position {
+    -x : int
+    -y : int
+    +Position(x: int, y: int)
+    +getX() : int
+    +getY() : int
+    +updateX(x: int) : void
+    +updateY(y: int) : void
+    +findClosestCreek(creeks: List<PointOfInterest>, emergencySite: PointOfInterest) : PointOfInterest
+}
+
+' Direction class
+class Direction {
+    -direction : String
+    +Direction(direction: String)
+    +turnLeft() : Direction
+    +turnRight() : Direction
+    +toString() : String
+}
+
+' BatteryManager class - manages battery for the drone
+class BatteryManager {
+    -batteryLevel : int
+    +BatteryManager(initialLevel: int)
+    +updateBattery(action: String) : void
+    +batteryCheck() : boolean
+    +getBatteryLevel() : int
+}
+
+' Action enum - represents actions the drone can take
+enum Action {
+    FLY
+    TURNRIGHT
+    TURNLEFT
+    SCAN
+    STOP
+    ECHO
+    ECHOFORWARD
+    ECHORIGHT
+    ECHOLEFT
+}
+
+' Drone class that implements DroneController
+class Drone {
+    -position : Position
+    -direction : Direction
+    -batteryManager : BatteryManager
+    -actions : List<Action>
+    +Drone(position: Position, direction: Direction, batteryManager: BatteryManager)
+    +fly() : JSONObject
+    +turnRight() : JSONObject
+    +turnLeft() : JSONObject
+    +scan() : JSONObject
+    +stop() : JSONObject
+    +echoForward() : JSONObject
+    +echoRight() : JSONObject
+    +echoLeft() : JSONObject
+    +updateBattery(action: String) : void
+    +getActionCost(action: Action) : int
+    +getPosition() : Position
+    +getDirection() : Direction
+    +getBatteryLevel() : int
+}
+
+' DroneResponse class
+class DroneResponse {
+    -cost : Integer
+    -extras : JSONObject
+    -status : String
+    +DroneResponse(response: JSONObject)
+    +getCost() : int
+    +getExtras() : JSONObject
+    +getStatus() : String
+    +getRange() : String
+    +getIntRange() : int
+    +getHeading() : String
+}
+
+' Command Interface and Concrete Command Classes
+interface DroneCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+class ScanCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+class TurnLeftCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+class TurnRightCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+class StopCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+' Echo Command Classes
+class EchoForwardCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+class EchoRightCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+class EchoLeftCommand {
+    +execute(drone: Drone) : JSONObject
+}
+
+' PointOfInterest class and types
+class PointOfInterest {
+    -position : Position
+    -id : String
+    -type : PointOfInterestType
+    +PointOfInterest(position: Position, id: String, type: PointOfInterestType)
+    +getX() : double
+    +getY() : double
+    +getID() : String
+}
+
+enum PointOfInterestType {
+    CREEK
+    SITE
+    BIOME
+}
+
+' PointsOfInterest class
+class PointsOfInterest {
+    -creeks : List<PointOfInterest>
+    -emergencySite : PointOfInterest
+    -biomes : List<String>
+    +addPointOfInterest(position: Position, id: String, type: PointOfInterestType) : void
+    +hasEmergencySite() : boolean
+    +processResponse(extras: JSONObject, poi: PointsOfInterest, drone: Drone) : void
+    +generateFinalReport(dronePosition: Position) : String
+    +getCreeks() : List<PointOfInterest>
+    +getEmergencySite() : PointOfInterest
+    +getBiomes() : List<String>
+    +getSiteID() : String
+    +loadClosestCreek(dronePosition: Position) : PointOfInterest
+}
+
+' Stage Enum
+enum Stage {
+    START
+    TURN
+    ECHO
+    FIND_ISLAND
+    SCAN
+    SCAN_AND_TURN
+    OUT_OF_RANGE
+}
+
+' Runner class
+class Runner {
+    +main(args: String[]) : void
+}
+
+' Explorer Class
+class Explorer {
+    -logger : Logger
+    -drone : Drone
+    -batteryManager : BatteryManager
+    -missionControl : MissionControl
+    -response : DroneResponse
+    -action : DecideAction
+    +initialize(s: String) : void
+    +takeDecision() : String
+    +acknowledgeResults(s: String) : void
+    +deliverFinalReport() : String
+}
+
+' MissionControl Class
+class MissionControl {
+    -drone : Drone
+    -batteryManager : BatteryManager
+    -action : DecideAction
+    -response : DroneResponse
+    -prevScan : String
+    -dronePos : Position
+    -poi : PointsOfInterest
+    -move : JSONObject
+    +initialize(direction: Direction, batteryLevel: Integer) : void
+    +determineMove() : void
+    +getMove() : JSONObject
+    +acknowledgeResults(result: JSONObject) : void
+    +deliverFinalReport() : String
+}
+
+' PointOfInterestFactory class
+class PointOfInterestFactory {
+    +createPointOfInterest(position: Position, id: String, type: PointOfInterestType) : PointOfInterest
+}
+
+' DecideAction Class
+class DecideAction {
+    -nextDecision : JSONObject
+    -lastDecisionWasScan : Boolean
+    -checkBiome : Boolean
+    -prevScan : JSONObject
+    -action : JSONObject
+    -stage : Stage
+    -drone : Drone
+    -moveCount : int
+    -rightScan : Boolean
+    +DecideAction(stage: Stage)
+    +chooseAction(drone: Drone, response: DroneResponse, map: PointsOfInterest) : void
+    +getDecision() : JSONObject
+    -handleOutOfRange(response: DroneResponse) : void
+    -handleBiomeScan(response: DroneResponse, map: PointsOfInterest) : void
+    -decideTurn(response: DroneResponse) : JSONObject
+    -moveForwardInRange(response: DroneResponse) : JSONObject
+    -scanAndTurn() : JSONObject
+    +lastActionScan() : Boolean
+    +getLastScan() : String
+    -getBackInRange() : JSONObject
+    -flyForward() : JSONObject
+    -stopDrone() : JSONObject
+    -performEchoActions() : void
+    -forwardEcho() : JSONObject
+    -rightEcho() : JSONObject
+    -leftEcho() : JSONObject
+    -rightTurn() : JSONObject
+    -leftTurn() : JSONObject
+    -scanArea() : JSONObject
+    -setAction(actionType: Action) : JSONObject
+}
+
+' DroneController <|-- Drone
+DroneController <|-- Drone
+
+' Composition Relationships
+Position "1" *-- "1" Drone
+Direction "1" *-- "1" Drone
+BatteryManager "1" *-- "1" Drone
+Action "1" *-- "*" Drone
+DecideAction "1" *-- "1" Drone
+MissionControl "1" *-- "1" Drone
+Explorer "1" *-- "1" DecideAction
+
+' Command relationships
+DroneCommand <|.. ScanCommand
+DroneCommand <|.. TurnLeftCommand
+DroneCommand <|.. TurnRightCommand
+DroneCommand <|.. StopCommand
+DroneCommand <|.. EchoForwardCommand
+DroneCommand <|.. EchoRightCommand
+DroneCommand <|.. EchoLeftCommand
+
+' PointsOfInterest associations
+PointsOfInterest "1" *-- "*" PointOfInterest
+
+' PointOfInterestType enum
+PointOfInterestType "1" o-- "*" PointOfInterest
+
+' Explorer and MissionControl
+Explorer "1" *-- "1" MissionControl
+
+' Runner interacting with Explorer
+Runner "1" -- "1" Explorer
+@enduml
