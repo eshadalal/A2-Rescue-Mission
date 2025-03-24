@@ -25,8 +25,8 @@ public class Explorer implements IExplorerRaid {
         Integer batteryLevel = info.getInt("budget");
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
-        this.drone = new Drone(Direction.EAST, 10000, 0, 0);
-        this.batteryManager = new BatteryManager(10000);
+        this.drone = new Drone(Direction.EAST, batteryLevel, 0, 0);
+        this.batteryManager = new BatteryManager(batteryLevel);
         this.missionControl = new MissionControl(drone, batteryManager);
 
     }
@@ -34,9 +34,10 @@ public class Explorer implements IExplorerRaid {
     @Override
     public String takeDecision() {
         JSONObject decision = missionControl.determineMove();
-        decision.put("action", decision.toString()); 
         logger.info("** Decision: {}", decision.toString());
-        return decision.toString();
+        JSONObject response = new JSONObject();
+        response.put("action", decision.getString("action"));
+        return response.toString();
     }
 
     @Override

@@ -6,6 +6,7 @@ public class MissionControl {
     private Drone drone;
     private BatteryManager batteryManager;
     private PointsOfInterest pointsOfInterest;
+    // private DecideAction action;
 
     public MissionControl(Drone drone, BatteryManager batteryManager) {
         this.drone = drone;
@@ -17,27 +18,9 @@ public class MissionControl {
         if (batteryManager.getBatteryLevel() < 10) {
             return drone.stop();
         }
-
-        JSONObject scan = drone.scan();
-        if (scan.has("extras")) {
-            JSONObject extras = scan.getJSONObject("extras");
-            PointsOfInterest.processResponse(extras, pointsOfInterest, drone);
-        }
-
-        if (pointsOfInterest.hasEmergencySite()) {
-            return planReturnPath();
-        }
-        return followCoastline();
-    }
-
-    private JSONObject followCoastline() {
-        // Coastline following logic
-        return drone.fly();
-    }
-
-    private JSONObject planReturnPath() {
-        // Pathfinding logic
-        return drone.fly();
+        
+        return drone.echoForward(); // placeholder for now 
+        // return action.chooseAction(Drone drone, DroneResponse response, PointsOfInterest map);
     }
 
     public void acknowledgeResults(JSONObject result) {

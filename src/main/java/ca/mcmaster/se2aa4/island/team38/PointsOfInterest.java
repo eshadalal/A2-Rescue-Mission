@@ -9,6 +9,7 @@ import org.json.JSONObject;
 public class PointsOfInterest {
     private List<PointOfInterest> creeks = new ArrayList<>();
     private PointOfInterest emergencySite;
+    private List<String> biomes = new ArrayList<>();
 
     public void addPointOfInterest(Position position, String id, PointOfInterestType type) {
         PointOfInterest poi = new PointOfInterest(position, id, type);
@@ -61,6 +62,10 @@ public class PointsOfInterest {
 
     public PointOfInterest getEmergencySite() {
         return emergencySite;
+    }
+
+    public List<String> getBiomes() {
+        return new ArrayList<>(biomes);
     }
 
     public String getSiteID() {
