@@ -7,6 +7,7 @@ public class Drone implements DroneController {
     private Direction direction;
     private Position position;
     private BatteryManager batteryManager;
+    private DroneCommand currentCommand;
 
     public Drone(Direction direction, int battery) {
         this.direction = direction;
@@ -14,137 +15,76 @@ public class Drone implements DroneController {
         this.position = new Position(0, 0);
     }
 
-    private boolean batteryCheck() {
+    public boolean batteryCheck() {
         return batteryManager.getBatteryLevel() > 10;
     }
 
     @Override
     public JSONObject fly() {
-        if (!batteryCheck()) {
-            return stop();
-        }
-        JSONObject request = new JSONObject();
-        request.put("action", "fly");
-        updatePositionAfterFly(direction.toString(), request);
-        updateBattery("fly");
-        return request;
-    }
-
-    public void updatePositionAfterFly(String direction, JSONObject move) {
-        switch (direction) {
-            case "N": position.updateY(1); break;
-            case "S": position.updateY(-1); break;
-            case "E": position.updateX(1); break;
-            case "W": position.updateX(-1); break;
-        }
+        currentCommand = new FlyCommand();  
+        return currentCommand.execute(this);
     }
 
     @Override
     public JSONObject turnRight() {
-        if (!batteryCheck()) {
-            return stop();
-        }
-        this.direction = this.direction.turnRight();
-        JSONObject request = new JSONObject();
-        request.put("action", "heading");
-        request.put("parameters", new JSONObject().put("direction", this.direction.toString()));
-        updateBattery("heading");
-        return request;
+        currentCommand = new TurnRightCommand();  
+        return currentCommand.execute(this);
     }
 
-    
     @Override
     public JSONObject turnLeft() {
-        if (!batteryCheck()) {
-            return stop();
-        }
-        this.direction = this.direction.turnLeft();
-        JSONObject request = new JSONObject();
-        request.put("action", "heading");
-        request.put("parameters", new JSONObject().put("direction", this.direction.toString()));
-        updateBattery("heading");
-        return request;
+        currentCommand = new TurnLeftCommand();  
+        return currentCommand.execute(this);
     }
 
     @Override
     public JSONObject scan() {
-        if (!batteryCheck()) {
-            return stop();
-        }
-        JSONObject request = new JSONObject();
-        request.put("action", "scan");
-        updateBattery("scan");
-        return request;
+        currentCommand = new ScanCommand();  
+        return currentCommand.execute(this);
     }
 
     @Override
     public JSONObject stop() {
-        JSONObject request = new JSONObject();
-        request.put("action", "stop");
-        updateBattery("stop");
-        return request;
+        currentCommand = new StopCommand();  
+        return currentCommand.execute(this);
     }
 
     @Override
     public JSONObject echoForward() {
-        if (!batteryCheck()) {
-            return stop();
-        }
-        JSONObject request = new JSONObject();
-        request.put("action", "echo");
-        request.put("parameters", new JSONObject().put("direction", this.direction.toString()));
-        updateBattery("echo");
-        return request;
+        currentCommand = new EchoForwardCommand(); 
+        return currentCommand.execute(this);
     }
 
     @Override
     public JSONObject echoRight() {
-        if (!batteryCheck()) {
-            return stop();
-        }
-        JSONObject request = new JSONObject();
-        request.put("action", "echo");
-        request.put("parameters", new JSONObject().put("direction", this.direction.turnRight().toString()));
-        updateBattery("echo");
-        return request;
+        currentCommand = new EchoRightCommand();  
+        return currentCommand.execute(this);
     }
 
     @Override
     public JSONObject echoLeft() {
-        if (!batteryCheck()) {
-            return stop();
-        }
-        JSONObject request = new JSONObject();
-        request.put("action", "echo");
-        request.put("parameters", new JSONObject().put("direction", this.direction.turnLeft().toString()));
-        updateBattery("echo");
-        return request;
+        currentCommand = new EchoLeftCommand();  
+        return currentCommand.execute(this);
     }
 
     @Override
     public void updateBattery(String action) {
-        int cost = getActionCost(action);  
-        batteryManager.decreaseBattery(cost); 
+        int cost = getActionCost(action);
+        batteryManager.decreaseBattery(cost);
     }
 
     @Override
     public int getActionCost(String action) {
         switch (action) {
-            case "fly":
-                return 2;
-            case "heading":
-                return 4;
-            case "scan":
-                return 2;
-            case "stop":
-                return 3;
-            case "echo":
-                return 1;
-            default:
-                return 0;
+            case "fly": return 2;
+            case "heading": return 4;
+            case "scan": return 2;
+            case "stop": return 3;
+            case "echo": return 1;
+            default: return 0;
         }
     }
-    
+
     public Position getPosition() {
         return this.position;
     }
@@ -157,5 +97,19 @@ public class Drone implements DroneController {
     public int getBatteryLevel() {
         return batteryManager.getBatteryLevel();
     }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    public void updatePositionAfterFly(String direction, JSONObject move) {
+        switch (direction) {
+            case "N": position.updateY(1); break;
+            case "S": position.updateY(-1); break;
+            case "E": position.updateX(1); break;
+            case "W": position.updateX(-1); break;
+        }
+    }
+
 
 }
