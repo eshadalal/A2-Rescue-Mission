@@ -1,5 +1,5 @@
 package ca.mcmaster.se2aa4.island.team38;
-
+//This class is used to keep track of the batterylevel of the drone
 public class BatteryManager {
 
     private int batteryLevel;
