@@ -1,5 +1,5 @@
 package ca.mcmaster.se2aa4.island.team38;
-
+//This class controls the direction of the drone, handling logic for turning left and right
 public enum Direction {
     NORTH("N"), EAST("E"), SOUTH("S"), WEST("W");
 
