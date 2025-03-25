@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
+//This class is to identify different points of interest, such as creeks and emergency sites. 
 public class PointsOfInterest {
     private List<PointOfInterest> creeks = new ArrayList<>();
     private PointOfInterest emergencySite;
